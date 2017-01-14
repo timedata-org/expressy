@@ -1,9 +1,9 @@
 import ast, functools, operator
-from . import value
+from .. import value
 
 
 def Expr(node, context):
-    return context.maker(node.value)
+    return context.make_value(node.value)
 
 
 def operator_and(values):
@@ -51,7 +51,7 @@ OPERATORS = {
 # Decorate a handler that wraps a standard operator.
 def operator(f):
     def handler(node, context):
-        args = [context.maker(d) for d in f(node)]
+        args = [context.make_value(d) for d in f(node)]
         operator = OPERATORS[node.op]
 
         def function():
@@ -92,9 +92,9 @@ COMPARATORS = {
 
 
 def Compare(node, context):  # 1 < 2 < 4 > 5
-    left = context.maker(node.left)
+    left = context.make_value(node.left)
     ops = [COMPARATORS[o] for o in node.ops]
-    values = [context.maker(c) for c in node.comparators]
+    values = [context.make_value(c) for c in node.comparators]
     op_values = zip(ops, values)
 
     def function():
@@ -110,10 +110,10 @@ def Compare(node, context):  # 1 < 2 < 4 > 5
 
 
 def Call(node, context):  # f(a, *b, **c)
-    arg = [context.maker(a) for a in node.arg]
-    kwds = {k.arg: context.maker(k.value) for k in node.keywords}
+    arg = [context.make_value(a) for a in node.arg]
+    kwds = {k.arg: context.make_value(k.value) for k in node.keywords}
 
-    function = context.maker(node.func)
+    function = context.make_value(node.func)
     assert isinstance(node.func, (ast.Attribute, ast.Name))
     assert function.constant
 
@@ -122,9 +122,9 @@ def Call(node, context):  # f(a, *b, **c)
 
 
 def IfExp(node, context):  # x if y else z
-    body = context.maker(node.body)
-    test = context.maker(node.test)
-    orelse = context.maker(node.orelse)
+    body = context.make_value(node.body)
+    test = context.make_value(node.test)
+    orelse = context.make_value(node.orelse)
 
     def function():
         return body() if test() else orelse()

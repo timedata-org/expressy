@@ -1,4 +1,4 @@
-from . import value
+from .. import value
 
 
 def Num(node, context):
@@ -19,7 +19,7 @@ def NameConstant(node, context):
 
 def collection(constructor):
     def f(node, context):
-        values = [context.maker(e) for e in node.elts]
+        values = [context.make_value(e) for e in node.elts]
 
         def function():
             return constructor(v() for v in values)
@@ -47,8 +47,8 @@ def Set():
 def Dict(node, context):
     # We always evaluate the keys immediately - we don't want them changing
     # underneath us!
-    keys = [context.maker(k)() for k in node.keys]
-    values = [context.maker(k) for k in node.values]
+    keys = [context.make_value(k)() for k in node.keys]
+    values = [context.make_value(k) for k in node.values]
 
     def function():
         return {k: v() for k, v in zip(keys, values)}

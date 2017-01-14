@@ -2,7 +2,7 @@ from . import value
 
 
 def Name(node, context):
-    return value.Value(symbol_table(node.id))
+    return value.Value(context.symbol_table(node.id))
 
 
 def Attribute(node, context):  # a.b.c

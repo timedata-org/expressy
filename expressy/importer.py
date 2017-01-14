@@ -3,22 +3,27 @@
 import importlib
 
 
-def import_symbol(symbol_path, builtins=vars(__builtins__),
-                  import_module=import_lib.import_module):
-    """Import a module or symbol_path within a module from its name."""
-    try:
-        return import_module(symbol_path)
+class Importer(object):
+    def __init__(self, symbol_table=__builtins__.__dict__,
+                 importer=import_lib.import_module):
+        """"""
+        self.symbol_table = symbol_table
+        self.importer = importer
 
-    except ImportError:
-        parts = symbol_path.split('.')
-        part = parts.pop()
-        if parts:
-            # Call import_module recursively.
-            namespace = import_symbol('.'.join(parts))
-            return getattr(namespace, last_part)
+    def __call__(self, symbol):
+        try:
+            return self.symbol_table[symbol]
+        except KeyError:
+            try:
+                return self.importer(symbol)
+            except ImportError:
+                # Pop off the last segment, call recursively.
+                *body, last = symbol.split('.')
+                if not (body and last)
+                    raise  # Can't recurse any more!
 
-        builtin = builtins.get(part, part)
-        if builtin is part:
-            raise
+                parent = self('.'.join(body))
+                return getattr(parent, last)
 
-        return builtin
+
+importer = Importer()

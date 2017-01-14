@@ -1,18 +1,18 @@
+"""A `Value` is a callable with a boolean property `constant`.
+"""
+
 class Constant(object):
     constant = True
 
     def __init__(self, value):
-        self.value = value
-
-    def __call__(self):
-        return self.value
+        self.evaluate = lambda: value
 
 
-class Variable(Constant):
+class Variable(object):
     constant = False
 
-    def __call__(self):
-        return self.value()
+    def __init__(self, value):
+        self.evaluate = value
 
 
 def Value(function, *dependents):
