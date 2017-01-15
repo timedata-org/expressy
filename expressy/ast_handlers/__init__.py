@@ -2,9 +2,11 @@ from . import literals, variables, expressions, subscripting
 
 """ast_handlers are functions which turn AST nodes into Values - recursively!
 
-An ast_handler is a function which takes an AST node and a Context, and returns
-a Value.
-"""
+An ast_handler is a function which takes an AST node, and returns a pair:
+   executor, [list of dependent AST nodes].
+
+At execution time, the executor gets a list with one evaluated value for each
+dependent AST node passed in."""
 
 
 def _handlers():
@@ -16,3 +18,10 @@ def _handlers():
 
 
 HANDLERS = dict(_handlers())
+
+
+def handle(node):
+    try:
+        return HANDERS[type(node)](node)
+    except:
+        raise ValueError('Not yet implemented: %s' % type(node))

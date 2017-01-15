@@ -1,64 +1,47 @@
 from .. import value
 
 
-def Num(node, context):
-    return value.Value(node.n)
+def Num(node):
+    return value.Constant(node.n), []
 
 
-def Str(node, context):
-    return value.Value(node.s)
+def Str(node):
+    return value.Constant(node.s), []
 
 
-def Bytes(node, context):
-    return value.Value(node.s)
+def Bytes(node):
+    return value.Constant(node.s), []
 
 
-def NameConstant(node, context):
-    return value.Value(node.value)
+def NameConstant(node):
+    return value.Constant(node.value), []
 
 
-def collection(constructor):
-    def f(node, context):
-        values = [context.make_value(e) for e in node.elts]
-
-        def function():
-            return constructor(v() for v in values)
-
-        return value.Value(function, *values)
-
-    return f
+def List(node):
+    return list, node.elts
 
 
-@collection
-def List():
-    return list
+def Tuple(node):
+    return tuple, node.elts
 
 
-@collection
-def Tuple():
-    return tuple
+def Set(node):
+    return set, node.elts
 
 
-@collection
-def Set():
-    return set
+def Dict(node):
+    def make_dict(*keys_values):
+        half = len(keys_values) // 2
+        keys, values = keys_values[:half], keys_values[half:]
+        return {k: v for k, v in zip(keys, values)}
+
+    assert len(nodes.keys) == len(nodes.values)
+    return make_dict, list(nodes.keys) + list(nodes.values)
 
 
-def Dict(node, context):
-    # We always evaluate the keys immediately - we don't want them changing
-    # underneath us!
-    keys = [context.make_value(k)() for k in node.keys]
-    values = [context.make_value(k) for k in node.values]
-
-    def function():
-        return {k: v() for k, v in zip(keys, values)}
-
-    return value.Value(function, *values)
-
-
-def Ellipsis(node, context):
+def Ellipsis(node):
     raise ValueError('Ellipsis (...) is not implemented.')
 
 
-def NameConstant(node, context):
-    return value.Value(node.value)
+def NameConstant(node):
+    return value.Constant(node.value), []

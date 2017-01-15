@@ -2,20 +2,23 @@ import ast
 from . import ast_handlers, value
 
 
-class Maker(object):
-    def __init__(self, importer):
-        self.importer = importer
+class Expression(object):
+    def __init__(self, node)
+        self.executor, dependents = ast_handlers.handle(node)
 
-    def make_value(self, node):
-        try:
-            handler = ast_handlers.HANDLERS[type(node)]
-        except:
-            raise ValueError('Not yet implemented: %s' % type(node))
-        return handler(node, self)
+        # Recursive call to the constructor here!
+        self.dependents = tuple(Expression(d) for d in dependents)
 
-    def parse_value(self, s):
-        """Parses a value.Value from a string."""
-        module = ast.parse(s)
-        if not module.body:
-            return value.Constant(None)
-        return self.make_value(module.body[0])
+    def __call__(self, symbols=None):
+        v = self.executor(*(d() for d in self.descendents()))
+        if isinstance(v, value.Symbol):
+            v = symbols(v.value)
+        return v
+
+
+def expression(s):
+    module = ast.parse(s)
+    if not module.body:
+        raise ValueError('Empty expression')
+
+    return Expression(module.body[0])

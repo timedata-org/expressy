@@ -2,36 +2,39 @@
 """
 
 class Constant(object):
-    constant = True
-
     def __init__(self, value):
-        self.evaluate = lambda: value
+        self.value = value
+
+    def __call__(self):
+        return value
+
+
+class Symbol(Constant):
+    pass
 
 
 class Variable(object):
-    constant = False
+    # unused!
+    def __init__(self, function, *args, **kwds):
+        self.function = function
+        self.args = args
+        self.kwds = kwds
 
-    def __init__(self, value):
-        self.evaluate = value
-
-
-def Value(function, *dependents):
-    # Returns a Constant if all dependents are constant, otherwise a
-    # Variable.
-    constant = all(d.constant for d in dependents)
-    return Constant(function()) if constant else Variable(function)
+    def __call__(self):
+        kwds = {k: v() for k, v in self.kwds.items()}
+        return self.function(a() for a in self.args, **kwds)
 
 
-_VARIABLE_FUNCTIONS = set()
+_TEMPORALS = set()
 
 
-def is_variable_function(f):
-    return _VARIABLE_FUNCTIONS.contains(f)
+def is_temporals(f):
+    return _TEMPORAL.contains(f)
 
 
-def variable_function(f):
+def temporal(f):
     """A decorator to indicate that a function might return different
     values given the same arguments.
     """
-    _VARIABLE_FUNCTIONS.add(f)
+    _TEMPORAL.add(f)
     return f
