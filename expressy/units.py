@@ -13,12 +13,11 @@ PINT_MATCH = r"""
     ( -? \d+ (?: \.\d* )? )           # A number with an optional decimal.
     ( \s* \w+)                        # A unit.
     (?:  ( \s* [ /] ) ( \s* \w+ ) )?  # A separator and a unit.
-    (?:  ( \s* [ /] ) ( \s* \w+ ) )?
-    (?:  ( \s* [ /] ) ( \s* \w+ ) )?
+    (?:  ( \s* [ /] ) ( \s* \w+ ) )?  # If I use * to repeat these, it only
+    (?:  ( \s* [ /] ) ( \s* \w+ ) )?  # captures the last one...
     (?:  ( \s* [ /] ) ( \s* \w+ ) )?
     (?:  ( \s* [ /] ) ( \s* \w+ ) )?
 """
-# The repetition is because otherwise you only get the last group from a match.
 
 PINT_MATCH_RE = re.compile(PINT_MATCH, re.VERBOSE)
 
