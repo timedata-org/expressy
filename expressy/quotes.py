@@ -17,8 +17,8 @@ def split_quoted(s):
 
 def process_unquoted(s, sub):
     def gen():
-        *parts, last = split_quoted(s, QUOTE)
-        for unquoted, quoted in zip([iter(parts)] * 2):
+        *parts, last = split_quoted(s)
+        for unquoted, quoted in zip(*([iter(parts)] * 2)):
             yield sub(unquoted)
             yield QUOTE + quoted + QUOTE
         yield sub(last)
