@@ -1,6 +1,7 @@
 import unittest
 from expressy.expression import expression
 
+
 class ExpressionTest(unittest.TestCase):
     def test_empty(self):
         with self.assertRaises(ValueError):
@@ -19,3 +20,6 @@ class ExpressionTest(unittest.TestCase):
         self.assertEqual(expression('[1, 2, 3]')(), [1, 2, 3])
         self.assertEqual(expression('(1, 2, 3)')(), (1, 2, 3))
         self.assertEqual(expression('{1, 2, 3}')(), {1, 2, 3})
+
+    def test_dict(self):
+        self.assertEqual(expression('{}')(), {})

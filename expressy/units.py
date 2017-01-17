@@ -23,16 +23,18 @@ PINT_MATCH = r"""
 PINT_MATCH_RE = re.compile(PINT_MATCH, re.VERBOSE)
 
 
+"""
+
 def make_unit_replacer(*definitions):
     if USE_PINT and pint:
         UREG = pint.UnitRegistry()
         # UREG.define('beats=[]')
         # UREG.define('bars=[beats]')
+    return UREG
 
 
 def insert_units(s, replacer):
     return s
-
 
     def parse(s):
         return UREG.parse_expression(s).to_base_units()
@@ -51,3 +53,4 @@ def insert_units(s, replacer):
 except ImportError:
     def parse(s):
         return float(s)
+"""

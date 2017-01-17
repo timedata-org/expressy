@@ -1,6 +1,7 @@
 """A `Value` is a callable with a boolean property `constant`.
 """
 
+
 class Constant(object):
     def __init__(self, value):
         self.value = value
@@ -29,12 +30,12 @@ _TEMPORALS = set()
 
 
 def is_temporals(f):
-    return _TEMPORAL.contains(f)
+    return _TEMPORALS.contains(f)
 
 
 def temporal(f):
     """A decorator to indicate that a function might return different
     values given the same arguments.
     """
-    _TEMPORAL.add(f)
+    _TEMPORALS.add(f)
     return f

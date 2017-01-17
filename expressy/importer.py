@@ -5,7 +5,7 @@ import importlib
 
 class Importer(object):
     def __init__(self, symbol_table=__builtins__.__dict__,
-                 importer=import_lib.import_module):
+                 importer=importlib.import_module):
         """"""
         self.symbol_table = symbol_table
         self.importer = importer
@@ -19,7 +19,7 @@ class Importer(object):
             except ImportError:
                 # Pop off the last segment, call recursively.
                 *body, last = symbol.split('.')
-                if not (body and last)
+                if not (body and last):
                     raise  # Can't recurse any more!
 
                 parent = self('.'.join(body))

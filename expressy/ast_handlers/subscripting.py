@@ -1,5 +1,6 @@
 import operator
 
+
 def Subscript(node):
     def get(getter, value):
         return getter(value)
