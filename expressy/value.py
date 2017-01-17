@@ -6,7 +6,7 @@ class Constant(object):
         self.value = value
 
     def __call__(self):
-        return value
+        return self.value
 
 
 class Symbol(Constant):

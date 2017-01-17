@@ -2,7 +2,7 @@ from . operators import operators
 
 
 def Expr(node):  # A container for an expression.
-    return node.value, []
+    return lambda x: x, [node.value]
 
 
 def BinOp(node):  # a + b
@@ -18,7 +18,7 @@ def UnaryOp(node):  # -a, not a, +a, ~a
 
 
 def Compare(node):  # a < b < c > d
-    ops = [operators(o] for o in node.ops]
+    ops = [operators(o) for o in node.ops]
 
     def compare(left, *values):
         assert len(ops) == len(values)

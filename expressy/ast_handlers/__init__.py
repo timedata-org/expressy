@@ -1,3 +1,4 @@
+import ast
 from . import literals, variables, expressions, subscripting
 
 """ast_handlers are functions which turn AST nodes into Values - recursively!
@@ -12,6 +13,8 @@ dependent AST node passed in."""
 def _handlers():
     for module in literals, variables, expressions, subscripting:
         for name, function in module.__dict__.items():
+            if name.startswith('_'):
+                continue
             attr = getattr(ast, name, None)
             if attr:
                 yield attr, function
@@ -22,6 +25,6 @@ HANDLERS = dict(_handlers())
 
 def handle(node):
     try:
-        return HANDERS[type(node)](node)
+        return HANDLERS[type(node)](node)
     except:
         raise ValueError('Not yet implemented: %s' % type(node))

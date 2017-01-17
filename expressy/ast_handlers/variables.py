@@ -1,4 +1,4 @@
-from . import value
+from .. import value
 
 
 def Name(node):
