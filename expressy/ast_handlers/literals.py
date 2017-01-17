@@ -18,15 +18,15 @@ def NameConstant(node):
 
 
 def List(node):
-    return list, node.elts
+    return lambda *d: list(d), node.elts
 
 
 def Tuple(node):
-    return tuple, node.elts
+    return lambda *d: tuple(d), node.elts
 
 
 def Set(node):
-    return set, node.elts
+    return lambda *d: set(d), node.elts
 
 
 def Dict(node):

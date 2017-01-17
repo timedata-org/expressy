@@ -10,3 +10,12 @@ class ExpressionTest(unittest.TestCase):
         self.assertEqual(expression('True')(), True)
         self.assertEqual(expression('False')(), False)
         self.assertEqual(expression('None')(), None)
+
+    def test_simple_literals(self):
+        self.assertEqual(expression('5')(), 5)
+        self.assertEqual(expression('"False"')(), 'False')
+
+    def test_collection(self):
+        self.assertEqual(expression('[1, 2, 3]')(), [1, 2, 3])
+        self.assertEqual(expression('(1, 2, 3)')(), (1, 2, 3))
+        self.assertEqual(expression('{1, 2, 3}')(), {1, 2, 3})
