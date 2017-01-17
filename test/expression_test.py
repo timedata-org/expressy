@@ -1,5 +1,6 @@
-import builtins, unittest
+import builtins, math, unittest
 from expressy.expression import expression
+from expressy.importer import importer
 
 
 class ExpressionTest(unittest.TestCase):
@@ -71,3 +72,6 @@ class ExpressionTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             e()
         self.assertEqual(e({'foo.bar.baz': 23}.get), 23)
+
+    def test_importer_attribute(self):
+        self.assert_eval('math.log(1)', importer)
