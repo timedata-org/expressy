@@ -1,9 +1,10 @@
 import operator
-from .. import value
-
 
 def Subscript(node):
-    return (lambda s, v: s(v)), [node.slice, node.value]
+    def get(getter, value):
+        return getter(value)
+
+    return get, [node.slice, node.value]
 
 
 def Index(node):

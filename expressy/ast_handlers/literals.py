@@ -30,12 +30,13 @@ def Set(node):
 
 
 def Dict(node):
+    assert len(nodes.keys) == len(nodes.values)
+    length = len(nodes.keys)
+
     def make_dict(*keys_values):
-        half = len(keys_values) // 2
-        keys, values = keys_values[:half], keys_values[half:]
+        keys, values = keys_values[:length], keys_values[length:]
         return {k: v for k, v in zip(keys, values)}
 
-    assert len(nodes.keys) == len(nodes.values)
     return make_dict, list(nodes.keys) + list(nodes.values)
 
 

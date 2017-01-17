@@ -7,13 +7,12 @@ class Expression(object):
         self.executor, dependents = ast_handlers.handle(node)
 
         # Recursive call to the constructor here!
-        self.dependents = tuple(Expression(d) for d in dependents)
+        self.dependent_expressions = tuple(Expression(d) for d in dependents)
 
-    def __call__(self, symbols=None):
-        v = self.executor(*(d() for d in self.descendents()))
-        if isinstance(v, value.Symbol):
-            v = symbols(v.value)
-        return v
+    def __call__(self, symbols):
+        evaluated = (d(symbols) for d in self.dependent_expressions)
+        v = self.executor(*evaluated)
+        return symbols(v.value) isinstance(v, value.Symbol) else f
 
 
 def expression(s):
