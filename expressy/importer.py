@@ -1,10 +1,10 @@
 # From BiblioPixel
 
-import importlib
+import builtins, importlib
 
 
 class Importer(object):
-    def __init__(self, symbol_table=__builtins__.__dict__,
+    def __init__(self, symbol_table=vars(builtins),
                  importer=importlib.import_module):
         """"""
         self.symbol_table = symbol_table
@@ -23,7 +23,11 @@ class Importer(object):
                     raise  # Can't recurse any more!
 
                 parent = self('.'.join(body))
-                return getattr(parent, last)
+                _NONE = object()
+                result = getattr(parent, last, _NONE)
+                if result is _NONE:
+                    raise
+                return result
 
 
 importer = Importer()

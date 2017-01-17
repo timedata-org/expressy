@@ -1,10 +1,10 @@
-import unittest
+import builtins, unittest
 from expressy.expression import expression
 
 
 class ExpressionTest(unittest.TestCase):
-    def assert_eval(self, s):
-        self.assertEqual(expression(s)(), eval(s))
+    def assert_eval(self, s, symbols=None):
+        self.assertEqual(expression(s)(symbols), eval(s))
 
     def assert_eval_raises(self, exception, s):
         e = expression(s)
@@ -59,3 +59,15 @@ class ExpressionTest(unittest.TestCase):
     def test_subscript(self):
         self.assert_eval('"abcd"[1][0]')
         self.assert_eval_raises(IndexError, '"abcd"[10]')
+
+    def test_call(self):
+        e = expression('max(-1, -2)')
+        with self.assertRaises(ValueError):
+            e()
+        self.assertEqual(e(vars(builtins).get), -1)
+
+    def test_attribute(self):
+        e = expression('foo.bar.baz')
+        with self.assertRaises(ValueError):
+            e()
+        self.assertEqual(e({'foo.bar.baz': 23}.get), 23)

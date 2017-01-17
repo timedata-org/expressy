@@ -11,10 +11,14 @@ class Expression(object):
         self.dependent_expressions = tuple(Expression(d) for d in dependents)
 
     def __call__(self, symbols=None):
-        symbols = symbols or {}
-        evaluated = (d(symbols) for d in self.dependent_expressions)
+        evaluated = [e(symbols) for e in self.dependent_expressions]
         v = self.executor(*evaluated)
-        return symbols(v.value) if isinstance(v, value.Symbol) else v
+        # return symbols(v.value) if isinstance(v, value.Symbol) else v
+        if isinstance(v, value.Symbol):
+            if not symbols:
+                raise ValueError('No symbol table defined for symbol ' + v.value)
+            return symbols(v.value)
+        return v
 
 
 def expression(s):

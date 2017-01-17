@@ -11,7 +11,8 @@ class Constant(object):
 
 
 class Symbol(Constant):
-    pass
+    def __call__(self):
+        return self
 
 
 class Variable(object):

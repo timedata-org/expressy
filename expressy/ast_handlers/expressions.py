@@ -32,14 +32,21 @@ def Compare(node):  # a < b < c > d
 
 
 def Call(node):  # f(a, *b, **c)
-    arg_length = len(node.arg)
-    keys, value_nodes = zip((k.arg, k.value) for k in node.keywords)
+    if not node.keywords:
+        def call(caller, *args):
+            return caller(*args)
+
+        return call, [node.func] + node.args
+
+    arg_length = len(node.args)
+    kv = [(k.arg, k.value) for k in node.keywords]
+    keys, value_nodes = zip(*kv)
 
     def call(caller, *args_values):
         args, values = args_values[:arg_length], args_values[arg_length:]
         return caller(*args, **dict(zip(keys, values)))
 
-    return call, node.arg + value_nodes
+    return call, [node.func] + node.arg + value_nodes
 
 
 def IfExp(node):  # a if b else c
