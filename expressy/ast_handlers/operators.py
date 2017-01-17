@@ -33,6 +33,7 @@ OPERATORS = {
     ast.Mod: operator.mod,
     ast.Mult: operator.mul,
     ast.Pow: operator.pow,
+    ast.Sub: operator.sub,
 
     ast.LShift: operator.lshift,
     ast.RShift: operator.rshift,

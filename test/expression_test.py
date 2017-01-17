@@ -28,3 +28,20 @@ class ExpressionTest(unittest.TestCase):
         self.assertEval('{}')
         self.assertEval('{1: 2}')
         self.assertEval('{1: 2, 2:{3: 4, 5: {}}}')
+
+    def test_binary(self):
+        self.assertEval('1 + 2')
+        self.assertEval('1 / 2.3 * 9')
+
+    def test_bool(self):
+        self.assertEval('True and "12"')
+        self.assertEval('False or "12" and 0 or []')
+
+    def test_compare(self):
+        self.assertEval('1 < 2 < 3')
+        self.assertEval('1 < 2 < 1')
+
+    def test_unary(self):
+        self.assertEval('not False')
+        self.assertEval('+(0 - 0)')
+        self.assertEval('-(0 - 1)')
