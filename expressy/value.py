@@ -2,7 +2,7 @@
 """
 
 
-class Constant(object):
+class Value(object):
     def __init__(self, value):
         self.value = value
 
@@ -10,33 +10,21 @@ class Constant(object):
         return self.value
 
 
-class Symbol(Constant):
+class Symbol(Value):
     def __call__(self):
         return self
 
 
-class Variable(object):
-    # unused!
-    def __init__(self, function, *args, **kwds):
-        self.function = function
-        self.args = args
-        self.kwds = kwds
-
-    def __call__(self):
-        kwds = {k: v() for k, v in self.kwds.items()}
-        return self.function(a() for a in self.args, **kwds)
+_VARIABLES = set()
 
 
-_TEMPORALS = set()
+def is_variables(f):
+    return _VARIABLES.contains(f)
 
 
-def is_temporals(f):
-    return _TEMPORALS.contains(f)
-
-
-def temporal(f):
+def variable(f):
     """A decorator to indicate that a function might return different
     values given the same arguments.
     """
-    _TEMPORALS.add(f)
+    _VARIABLES.add(f)
     return f

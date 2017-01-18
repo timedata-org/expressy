@@ -2,19 +2,19 @@ from .. import value
 
 
 def Num(node):
-    return value.Constant(node.n), []
+    return value.Value(node.n), []
 
 
 def Str(node):
-    return value.Constant(node.s), []
+    return value.Value(node.s), []
 
 
 def Bytes(node):
-    return value.Constant(node.s), []
+    return value.Value(node.s), []
 
 
 def NameConstant(node):
-    return value.Constant(node.value), []
+    return value.Value(node.value), []
 
 
 def List(node):
