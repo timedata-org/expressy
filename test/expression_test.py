@@ -63,13 +63,13 @@ class ExpressionTest(unittest.TestCase):
 
     def test_call(self):
         e = expression('max(-1, -2)')
-        with self.assertRaises(ValueError):
+        with self.assertRaises(KeyError):
             e()
         self.assertEqual(e(vars(builtins).get), -1)
 
     def test_attribute(self):
         e = expression('foo.bar.baz')
-        with self.assertRaises(ValueError):
+        with self.assertRaises(KeyError):
             e()
         self.assertEqual(e({'foo.bar.baz': 23}.get), 23)
 

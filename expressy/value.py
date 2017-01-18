@@ -13,18 +13,3 @@ class Value(object):
 class Symbol(Value):
     def __call__(self):
         return self
-
-
-_VARIABLES = set()
-
-
-def is_variables(f):
-    return _VARIABLES.contains(f)
-
-
-def variable(f):
-    """A decorator to indicate that a function might return different
-    values given the same arguments.
-    """
-    _VARIABLES.add(f)
-    return f

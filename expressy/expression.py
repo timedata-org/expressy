@@ -1,24 +1,28 @@
 import ast
 from . import ast_handlers, value
 
+NO_SYMBOLS = {}.__getitem__
+
 
 class Expression(object):
-    def __init__(self, node):
-        self.executor, dependents = ast_handlers.handle(node)
-        assert callable(self.executor), str(type(self.executor))
+    def __init__(self, executor, dependent_expressions):
+        self.executor = executor
+        self.dependent_expressions = dependent_expressions
 
-        # Recursive call to the constructor here!
-        self.dependent_expressions = tuple(Expression(d) for d in dependents)
-
-    def __call__(self, symbols=None):
+    def __call__(self, symbols=NO_SYMBOLS):
         evaluated = [e(symbols) for e in self.dependent_expressions]
         v = self.executor(*evaluated)
-        # return symbols(v.value) if isinstance(v, value.Symbol) else v
-        if isinstance(v, value.Symbol):
-            if not symbols:
-                raise ValueError('No symbol table defined for symbol ' + v.value)
-            return symbols(v.value)
-        return v
+        return symbols(v.value) if isinstance(v, value.Symbol) else v
+
+
+def make_expression(node):
+    executor, dependent_nodes = ast_handlers.handle(node)
+    assert callable(executor), str(type(executor))
+
+    # Recursive call to the constructor here!
+    dependent_expressions = (make_expression(n) for n in dependent_nodes)
+
+    return Expression(executor, tuple(dependent_expressions))
 
 
 def expression(s):
@@ -26,4 +30,9 @@ def expression(s):
     if not module.body:
         raise ValueError('Empty expression')
 
-    return Expression(module.body[0])
+    return make_expression(module.body[0])
+
+
+def evaluate_constant(expression, symbols, variables):
+    """Evaluate every part that isn't a variable symbol or dependent on it."""
+    pass
