@@ -2,6 +2,8 @@ import builtins, math, unittest
 from expressy.expression import expression
 from expressy.importer import importer
 
+NO_SYMBOLS = {}.__getitem__
+
 
 class ExpressionTest(unittest.TestCase):
     def assert_eval(self, s, symbols=None):
@@ -10,7 +12,7 @@ class ExpressionTest(unittest.TestCase):
     def assert_eval_raises(self, exception, s):
         e = expression(s)
         with self.assertRaises(exception):
-            e()
+            e(NO_SYMBOLS)
 
     def test_empty(self):
         with self.assertRaises(ValueError):
@@ -64,13 +66,13 @@ class ExpressionTest(unittest.TestCase):
     def test_call(self):
         e = expression('max(-1, -2)')
         with self.assertRaises(KeyError):
-            e()
+            e(NO_SYMBOLS)
         self.assertEqual(e(vars(builtins).get), -1)
 
     def test_attribute(self):
         e = expression('foo.bar.baz')
         with self.assertRaises(KeyError):
-            e()
+            e(NO_SYMBOLS)
         self.assertEqual(e({'foo.bar.baz': 23}.get), 23)
 
     def test_importer_attribute(self):

@@ -1,7 +1,6 @@
 import ast
 from . import ast_handlers, value
-
-NO_SYMBOLS = {}.__getitem__
+from . value import Symbol, Value
 
 
 class Expression(object):
@@ -9,20 +8,20 @@ class Expression(object):
         self.executor = executor
         self.dependents = dependents
 
-    def __call__(self, symbols=NO_SYMBOLS):
+    def __call__(self, symbols):
         evaluated = [e(symbols) for e in self.dependents]
         v = self.executor(*evaluated)
-        if isinstance(v, value.Symbol):
+        if isinstance(v, Symbol):
             return symbols(v.value)
         return v
 
 
-def make_expression(node):
+def expression_from_node(node):
     executor, dependent_nodes = ast_handlers.handle(node)
     assert callable(executor), str(type(executor))
 
-    # Recursive call to the constructor here!
-    dependents = (make_expression(n) for n in dependent_nodes)
+    # Recursive call here!
+    dependents = (expression_from_node(n) for n in dependent_nodes)
     return Expression(executor, *dependents)
 
 
@@ -31,29 +30,36 @@ def expression(s):
     if not module.body:
         raise ValueError('Empty expression')
 
-    return make_expression(module.body[0])
+    return expression_from_node(module.body[0])
 
 
-def evaluate_constant(expression, is_variable, symbols=NO_SYMBOLS):
+def evaluate_constant(expression, is_variable, is_late_binding, symbols):
     """Recursively evaluate every part that isn't a variable symbol or
     dependent on one.
     """
 
-    def make_constant(expr):
-        if isinstance(expr.executor, value.Symbol):
-            symbol_name = expr.executor.value
-            if is_variable(symbol_name):
-                return Expression(value.Value(result))
+    def bind_dependents(executor, *dependents):
+        expression = Expression(executor, *dependents)
+        return lambda: expression(symbols)
 
-        else:
-            dependents = [make_constant(d) for d in expr.dependents]
-            if any(isinstance(d, Expression) for d in dependents):
-                for i, d in dependents:
-                    if not isinstance(d, Expression):
-                        dependents[i] = Expression(value.Value(d))
+    def make_symbol(expr):
+        assert not expr.dependents
+        name = expr.executor.value
+        variable = bind_dependents(expr.executor)
 
-                return Expression(expr.executor, *dependents)
+        if is_late_binding(name):
+            return False, variable
 
-        return expr(symbols)
+        return is_variable(name), Value(variable())
 
-    return make_constant(expression)
+    def make(expr):
+        if isinstance(expr.executor, Symbol):
+            return make_symbol(expr)
+
+        constants, dependents = zip(*(make(d) for d in expr.dependents))
+        variable = bind_dependents(expr.executor, *dependents)
+        if all(constants):
+            return True, Value(variable())
+        return False, variable
+
+    return make(expression)
