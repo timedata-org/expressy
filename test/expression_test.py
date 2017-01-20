@@ -1,5 +1,5 @@
 import builtins, math, unittest
-from expressy.expression import expression
+from expressy.expression import parse_expression
 from expressy.importer import importer
 
 NO_SYMBOLS = {}.__getitem__
@@ -7,16 +7,16 @@ NO_SYMBOLS = {}.__getitem__
 
 class ExpressionTest(unittest.TestCase):
     def assert_eval(self, s, symbols=None):
-        self.assertEqual(expression(s)(symbols), eval(s))
+        self.assertEqual(parse_expression(s)(symbols), eval(s))
 
     def assert_eval_raises(self, exception, s):
-        e = expression(s)
+        e = parse_expression(s)
         with self.assertRaises(exception):
             e(NO_SYMBOLS)
 
     def test_empty(self):
         with self.assertRaises(ValueError):
-            expression('')
+            parse_expression('')
 
     def test_named_constant(self):
         self.assert_eval('True')
@@ -64,13 +64,13 @@ class ExpressionTest(unittest.TestCase):
         self.assert_eval_raises(IndexError, '"abcd"[10]')
 
     def test_call(self):
-        e = expression('max(-1, -2)')
+        e = parse_expression('max(-1, -2)')
         with self.assertRaises(KeyError):
             e(NO_SYMBOLS)
         self.assertEqual(e(vars(builtins).get), -1)
 
     def test_attribute(self):
-        e = expression('foo.bar.baz')
+        e = parse_expression('foo.bar.baz')
         with self.assertRaises(KeyError):
             e(NO_SYMBOLS)
         self.assertEqual(e({'foo.bar.baz': 23}.get), 23)
