@@ -7,7 +7,10 @@ An ast_handler is a function which takes an AST node, and returns a pair:
    executor, [list of dependent AST nodes].
 
 At execution time, the executor gets a list with one evaluated value for each
-dependent AST node passed in."""
+dependent AST node passed in.
+
+See: https://greentreesnakes.readthedocs.io/en/latest/nodes.html
+"""
 
 
 def _handlers():
