@@ -5,29 +5,44 @@ import builtins, importlib
 
 class Importer(object):
     def __init__(self, symbol_table=vars(builtins),
-                 importer=importlib.import_module):
-        """"""
+                 importer=importlib.import_module,
+                 test_getter=True):
         self.symbol_table = symbol_table
         self.importer = importer
+        self.test_getter = test_getter
+
+    def getter(self, symbol):
+        try:
+            value = self.symbol_table[symbol]
+            return lambda: value
+        except KeyError:
+            pass
+
+        *body, last = symbol.split('.')
+        try:
+            imported = self.importer(symbol)
+            return lambda: imported
+        except ImportError:
+            if not (body and last):
+                raise  # Can't recurse any more!
+
+        # Call recursively.
+        parent_name = '.'.join(body)
+        parent = self.getter(parent_name)
+        parent_value = parent()
+
+        def getter():
+            return getattr(parent_value, last)
+
+        if self.test_getter:
+            try:
+                getter()
+            except AttributeError:
+                raise ImportError("No module named '%s'" % symbol, name=symbol)
+        return getter
 
     def __call__(self, symbol):
-        try:
-            return self.symbol_table[symbol]
-        except KeyError:
-            try:
-                return self.importer(symbol)
-            except ImportError:
-                # Pop off the last segment, call recursively.
-                *body, last = symbol.split('.')
-                if not (body and last):
-                    raise  # Can't recurse any more!
-
-                parent = self('.'.join(body))
-                _NONE = object()
-                result = getattr(parent, last, _NONE)
-                if result is _NONE:
-                    raise
-                return result
+        return self.getter(symbol)()
 
 
 importer = Importer()
