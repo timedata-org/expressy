@@ -38,3 +38,21 @@ def insert_units(s, replacer):
         return replacer(s)
 
     return quotes.process_unquoted(s, sub)
+
+
+def inject_pint(symbols, use_pint, definitions, injected_name):
+    if not (use_pint and pint):
+        return symbols, lambda s: s
+
+    # Find and replace all pint expressions in the string.
+    parse = make_ureg(definitions or []).parse_expression
+
+    def get_symbol(name):
+        if name == injected_name:
+            return lambda s: parse(s).to_base_units()
+        return symbols(name)
+
+    def preprocessor(s):
+        return insert_units(s, lambda s: "%s('%s')" % (injected_name, s))
+
+    return get_symbol, preprocessor

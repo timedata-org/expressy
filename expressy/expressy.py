@@ -67,29 +67,11 @@ def expressy(is_variable=accept_none, is_late_binding=accept_none,
 
         pint_name: the replacement name to use in expressions to involve pint.
     """
-    if use_pint and units.pint:
-        # Find and replace all pint expressions in the string before going on.
-        pint_registry = pint_registry or units.make_ureg(
-            pint_definitions or [])
-        parse = pint_registry.parse_expression
-
-        def get_symbol(name):
-            if name == pint_name:
-                return lambda s: parse(s).to_base_units()
-            return symbols(name)
-
-        def preprocessor(s):
-            return units.insert_units(s, lambda s: "%s('%s')" % (pint_name, s))
-
-    else:
-        get_symbol = symbols
-
-        def preprocessor(s):
-            return s
+    get_symbol, preprocessor = units.inject_pint(
+        symbols, use_pint, pint_definitions, pint_name)
 
     def expression_maker(s):
         e = expression.parse_expression(preprocessor(s))
-
         if constant_reduction:
             return reduce_constant(e, get_symbol, is_variable, is_late_binding)
 
