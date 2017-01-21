@@ -1,5 +1,5 @@
 from . import quotes
-import keyword, re
+import keyword, functools, re
 
 
 PINT_MATCH = r"""
@@ -20,39 +20,51 @@ except ImportError:
     pint = None
 
 
-def make_ureg(definitions):
+def make_unit_registry(definitions):
     ureg = pint.UnitRegistry()
     map(ureg.define, definitions)
     return ureg
 
 
-def parse(s):
-    pass  # return ureg.parse_expression(s).to_base_units()
-
-
-def insert_units(s, replacer):
+def process_units(s, processor):
     def sub(match):
         groups = match.groups()
-        if any(keyword.iskeyword(g.strip()) for g in groups) or not groups[2]:
-            return s
-        return replacer(s)
+        has_keyword = any(keyword.iskeyword(g.strip()) for g in groups)
+        has_units = groups[2] is not None
+        can_process = has_units and not has_keyword
+
+        body = match.groups(0)
+        return processor(body) if can_process else body
 
     return quotes.process_unquoted(s, sub)
 
 
-def inject_pint(symbols, use_pint, definitions, injected_name):
-    if not (use_pint and pint):
-        return symbols, lambda s: s
+def make_injector(enable=True, definitions=None, injected_name='pint'):
+    if enable and pint:
+        def inject(symbols):
+            unit_registry = make_unit_registry(definitions or [])
 
-    # Find and replace all pint expressions in the string.
-    parse = make_ureg(definitions or []).parse_expression
+            def parse(s):
+                return unit_registry.parse_expression(s).to_base_units()
 
-    def get_symbol(name):
-        if name == injected_name:
-            return lambda s: parse(s).to_base_units()
-        return symbols(name)
+            def wrap_name(s):
+                return "%s('%s')" % (injected_name, s)
 
-    def preprocessor(s):
-        return insert_units(s, lambda s: "%s('%s')" % (injected_name, s))
+            def symbols_injected(name):
+                return parse if name == injected_name else symbols(name)
 
-    return get_symbol, preprocessor
+            def preprocessor(s):
+                return process_units(s, injected_name)
+
+            return symbols_injected, preprocessor
+    else:
+        def inject(symbols):
+            def preprocessor(s):
+                return s
+
+            return symbols, preprocessor
+
+    return inject
+
+
+injector = make_injector()

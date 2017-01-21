@@ -31,3 +31,25 @@ def parse_expression(s):
         raise ValueError('Empty expression')
 
     return expression_from_node(module.body[0])
+
+
+def reduce_constant(expression, symbols, is_variable):
+    """Recursively evaluate every part of an expression that isn't a
+    variable symbol or dependent on one.
+    """
+
+    def make(expr):
+        result = value.Value(expr(symbols))
+
+        if isinstance(expr.executor, value.Symbol):
+            return not is_variable(expr.executor.value), result
+
+        # Recursive call.
+        constants, dependents = zip(*(make(d) for d in expr.dependents))
+        if all(constants):
+            return True, result
+
+        reduced_expr = Expression(expr.executor, *dependents)
+        return False, lambda: reduced_expr(symbols)
+
+    return make(expression)
