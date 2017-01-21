@@ -14,16 +14,13 @@ PINT_MATCH = r"""
 
 PINT_MATCH_RE = re.compile(PINT_MATCH, re.VERBOSE)
 
-
 try:
     import pint
 except ImportError:
     pint = None
 
-USE_PINT = bool(pint)
 
-
-def make_ureg(*definitions):
+def make_ureg(definitions):
     ureg = pint.UnitRegistry()
     map(ureg.define, definitions)
     return ureg
@@ -34,8 +31,10 @@ def parse(s):
 
 
 def insert_units(s, replacer):
-    def match_is_pint(groups):
-        return groups[2] and any(keyword.iskeyword(g.strip()) for g in groups)
+    def sub(match):
+        groups = match.groups()
+        if any(keyword.iskeyword(g.strip()) for g in groups) or not groups[2]:
+            return s
+        return replacer(s)
 
-    def function(match):
-        return replacer(s) if match_is_pint(match) else s
+    return quotes.process_unquoted(s, sub)

@@ -1,11 +1,11 @@
 import builtins
 
-from . import expression, importer, value
+from . import expression, importer, units, value
 
 
-def evaluate_constants(expression, symbols, is_variable, is_late_binding):
-    """Recursively evaluate every part that isn't a variable symbol or
-    dependent on one.
+def reduce_constant(expression, symbols, is_variable, is_late_binding):
+    """Recursively evaluate every part of an expression that isn't a
+    variable symbol or dependent on one.
     """
 
     def bind_dependents(executor, *dependents):
@@ -36,10 +36,63 @@ def evaluate_constants(expression, symbols, is_variable, is_late_binding):
 
 
 def accept_none(_):
+    """Return False for any argument."""
     return False
 
 
-def expressy(s, is_variable=accept_none, is_late_binding=accept_none,
-             symbols=importer.importer):
-    expr = expression.parse_expression(s)
-    return evaluate_constants(expr, symbols, is_variable, is_late_binding)
+def expressy(is_variable=accept_none, is_late_binding=accept_none,
+             symbols=importer.importer, use_pint=False,
+             pint_definitions=None, pint_registry=None, pint_name='pint',
+             constant_reduction=True):
+    """Returns an expression maker - a function that converts a string
+    to a callable whose value is that expression
+
+    Args:
+       is_variable:  A function that returns True if a symbol is variable,
+         otherwise False
+
+       is_late_binding: A function that returns True if a symbol uses late
+           binding - meaning that the value of the symbol is retrieved from
+           scratch every time it is read.
+
+        symbols: A symbol table that given a symbol either returns a symbol
+            value, or throws a KeyError.
+
+        use_pint: If True, try to use the pint unit conversion system.
+
+        pint_definitions: a list of definitions to use if creating a new pint
+            UnitRegistry.
+
+        pint_registry: an existing pint registry to use
+
+        pint_name: the replacement name to use in expressions to involve pint.
+    """
+    if use_pint and units.pint:
+        # Find and replace all pint expressions in the string before going on.
+        pint_registry = pint_registry or units.make_ureg(
+            pint_definitions or [])
+        parse = pint_registry.parse_expression
+
+        def get_symbol(name):
+            if name == pint_name:
+                return lambda s: parse(s).to_base_units()
+            return symbols(name)
+
+        def preprocessor(s):
+            return units.insert_units(s, lambda s: "%s('%s')" % (pint_name, s))
+
+    else:
+        get_symbol = symbols
+
+        def preprocessor(s):
+            return s
+
+    def expression_maker(s):
+        e = expression.parse_expression(preprocessor(s))
+
+        if constant_reduction:
+            return reduce_constant(e, get_symbol, is_variable, is_late_binding)
+
+        return lambda: e(symbols)
+
+    return expression_maker
