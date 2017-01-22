@@ -28,9 +28,9 @@ def make_unit_registry(definitions):
 
 def process_units(s, processor):
     def replace(match):
-        groups = match.groups()
-        has_keyword = any(keyword.iskeyword((g or '').strip()) for g in groups)
-        has_units = groups[1] is not None
+        groups = [(g or '').strip() for g in match.groups()]
+        has_keyword = any(keyword.iskeyword(g) for g in groups)
+        has_units = any(g.isalpha() for g in groups)
         can_process = has_units and not has_keyword
 
         s = match.group(0)
@@ -57,7 +57,7 @@ def make_injector(enable=True, definitions=None, injected_name='pint'):
                 return parse if name == injected_name else symbols(name)
 
             def preprocessor(s):
-                return process_units(s, injected_name)
+                return process_units(s, wrap_name)
 
             return symbols_injected, preprocessor
     else:
