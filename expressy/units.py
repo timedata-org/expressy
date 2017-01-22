@@ -27,14 +27,17 @@ def make_unit_registry(definitions):
 
 
 def process_units(s, processor):
-    def sub(match):
+    def replace(match):
         groups = match.groups()
-        has_keyword = any(keyword.iskeyword(g.strip()) for g in groups)
-        has_units = groups[2] is not None
+        has_keyword = any(keyword.iskeyword((g or '').strip()) for g in groups)
+        has_units = groups[1] is not None
         can_process = has_units and not has_keyword
 
-        body = match.groups(0)
-        return processor(body) if can_process else body
+        s = match.group(0)
+        return processor(s) if can_process else s
+
+    def sub(s):
+        return PINT_MATCH_RE.sub(replace, s)
 
     return quotes.process_unquoted(s, sub)
 
