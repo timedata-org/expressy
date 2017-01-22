@@ -2,7 +2,7 @@ from . operators import operators
 
 
 def Expr(node):  # A container for an expression.
-    return lambda x: x, [node.value]
+    return (lambda x: x), [node.value]
 
 
 def BinOp(node):  # a + b

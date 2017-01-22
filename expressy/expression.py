@@ -44,6 +44,9 @@ def reduce_constant(expression, symbols, is_variable):
         if isinstance(expr.executor, value.Symbol):
             return not is_variable(expr.executor.value), result
 
+        if not expr.dependents:
+            return True, result
+
         # Recursive call.
         constants, dependents = zip(*(make(d) for d in expr.dependents))
         if all(constants):

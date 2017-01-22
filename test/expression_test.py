@@ -1,6 +1,7 @@
 import builtins, math, unittest
-from expressy.expression import parse_expression
+from expressy.expression import parse_expression, reduce_constant
 from expressy.importer import importer
+from expressy import value
 
 NO_SYMBOLS = {}.__getitem__
 
@@ -77,3 +78,10 @@ class ExpressionTest(unittest.TestCase):
 
     def test_importer_attribute(self):
         self.assert_eval('math.log(1)', importer)
+
+    def test_reduce_constant(self):
+        e = parse_expression('1')
+        constant, f = reduce_constant(e, NO_SYMBOLS, lambda x: False)
+        self.assertTrue(constant)
+        self.assertEqual(f(), 1)
+        self.assertTrue(isinstance(f, value.Value))
