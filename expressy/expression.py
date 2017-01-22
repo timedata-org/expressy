@@ -1,9 +1,10 @@
 import ast
 from . import ast_handlers, value
-from . value import Symbol, Value
 
 
 class Expression(object):
+    constant = False
+
     def __init__(self, executor, *dependents):
         self.executor = executor
         self.dependents = dependents
@@ -11,9 +12,19 @@ class Expression(object):
     def __call__(self, symbols):
         evaluated = [e(symbols) for e in self.dependents]
         v = self.executor(*evaluated)
-        if isinstance(v, Symbol):
+        if isinstance(v, value.Symbol):
             return symbols(v.value)
         return v
+
+
+class Constant(object):
+    constant = True
+
+    def __init__(self, value):
+        self.value = value
+
+    def __call__(self, symbols):
+        return self.value
 
 
 def expression_from_node(node):
@@ -39,20 +50,18 @@ def reduce_constant(expression, symbols, is_variable):
     """
 
     def make(expr):
-        result = value.Value(expr(symbols))
+        result = expr(symbols)
 
         if isinstance(expr.executor, value.Symbol):
-            return not is_variable(expr.executor.value), result
+            if is_variable(expr.executor.value):
+                return expr
 
-        if not expr.dependents:
-            return True, result
+        elif expr.dependents:
+            # Recursive call.
+            dependents = [make(d) for d in expr.dependents]
+            if not all(d.constant for d in dependents):
+                return Expression(expr.executor, *dependents)
 
-        # Recursive call.
-        constants, dependents = zip(*(make(d) for d in expr.dependents))
-        if all(constants):
-            return True, result
-
-        reduced_expr = Expression(expr.executor, *dependents)
-        return False, lambda: reduced_expr(symbols)
+        return Constant(result)
 
     return make(expression)

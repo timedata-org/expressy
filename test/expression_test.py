@@ -81,7 +81,35 @@ class ExpressionTest(unittest.TestCase):
 
     def test_reduce_constant(self):
         e = parse_expression('1')
-        constant, f = reduce_constant(e, NO_SYMBOLS, lambda x: False)
-        self.assertTrue(constant)
-        self.assertEqual(f(), 1)
-        self.assertTrue(isinstance(f, value.Value))
+        f = reduce_constant(e, NO_SYMBOLS, lambda x: False)
+        self.assertTrue(f.constant)
+        self.assertEqual(f(NO_SYMBOLS), 1)
+
+    def test_reduce_constant_variables(self):
+        e = parse_expression('foo.bar() + foo.baz() + foo.bang')
+
+        # We're going to set up a fake environment with these three variables,
+        # mark foo.baz as variable, and then reduce constants... then
+        # change all these and check that only foo.baz changed.
+
+        bar, baz, bang = ['a'], ['b'], ['c']
+
+        def symbols(name):
+            if name == 'foo.bar':
+                return lambda: bar[0]
+            if name == 'foo.baz':
+                return lambda: baz[0]
+            if name == 'foo.bang':
+                return bang[0]
+            raise KeyError()
+
+        def is_variable(name):
+            return name == 'foo.baz'
+
+        self.assertEqual(e(symbols), 'abc')
+
+        f = reduce_constant(e, symbols, is_variable)
+        self.assertFalse(f.constant)
+        self.assertEqual(f(symbols), 'abc')
+        bar[0], baz[0], bang[0] = 'xyz'
+        self.assertEqual(f(symbols), 'ayc')
