@@ -85,6 +85,10 @@ class ExpressionTest(unittest.TestCase):
         self.assertTrue(f.constant)
         self.assertEqual(f(NO_SYMBOLS), 1)
 
+    def test_unimplemented(self):
+        with self.assertRaises(ValueError):
+            parse_expression('lambda x: x')
+
     def test_reduce_constant_variables(self):
         e = parse_expression('foo.bar() + foo.baz() + foo.bang')
 

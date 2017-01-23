@@ -32,13 +32,12 @@ class Importer(object):
         parent_value = parent()
 
         def getter():
-            return getattr(parent_value, last)
-
-        if self.test_getter:
             try:
-                getter()
+                return getattr(parent_value, last)
             except AttributeError:
                 raise ImportError("No module named '%s'" % symbol, name=symbol)
+
+        self.test_getter and getter()
         return getter
 
     def __call__(self, symbol):

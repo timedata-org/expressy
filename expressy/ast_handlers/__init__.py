@@ -21,8 +21,11 @@ def _handlers():
             attr = getattr(ast, name, None)
             if attr:
                 yield attr, function
-            elif len(name) > 1 and name[0].isupper() and name[1].islower():
-                raise ValueError(name)
+            else:
+                assert not (
+                    len(name) > 1 and
+                    name[0].isupper() and
+                    name[1].islower()), name
 
 
 HANDLERS = dict(_handlers())

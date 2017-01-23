@@ -1,38 +1,48 @@
-import unittest
+import math, unittest
 
 from expressy import importer
-
-import_symbol = importer.importer
 
 
 class ImporterTest(unittest.TestCase):
     def test_empty(self):
         with self.assertRaises(ValueError):
-            import_symbol('')
+            importer.importer('')
 
     def test_single(self):
-        import_symbol('math')
-        import_symbol('expressy')
+        self.assertIs(importer.importer('math'), math)
+        importer.importer('expressy')
 
     def test_failed_single(self):
         with self.assertRaises(ImportError):
-            import_symbol('DOESNT_EXIST')
+            importer.importer('DOESNT_EXIST')
 
     def test_double(self):
-        import_symbol('math.log')
-        import_symbol('expressy.quotes')
+        self.assertIs(importer.importer('math.log'), math.log)
+        q = importer.importer('expressy.quotes')
+        import expressy.quotes
+        self.assertIs(q, expressy.quotes)
 
     def test_failed_double(self):
         with self.assertRaises(ImportError):
-            import_symbol('math12.log')
+            importer.importer('math12.log')
 
         with self.assertRaises(ImportError):
-            import_symbol('math.log12')
+            importer.importer('math.log12')
 
         with self.assertRaises(ImportError):
-            import_symbol('expressy.log12')
+            importer.importer('expressy.log12')
 
     def test_longer(self):
-        self.assertEqual(import_symbol('expressy.importer'), importer)
-        self.assertEqual(import_symbol('expressy.importer.importer'),
-                         import_symbol)
+        self.assertEqual(importer.importer('expressy.importer'), importer)
+        self.assertEqual(importer.importer('expressy.importer.importer'),
+                         importer.importer)
+
+    def test_getter(self):
+        self.assertIs(importer.importer.getter('math')(), math)
+        self.assertIs(importer.importer.getter('math.log')(), math.log)
+        with self.assertRaises(ImportError):
+            importer.importer.getter('math.log12')
+        untested_importer = importer.Importer(test_getter=False)
+        getter = untested_importer.getter('math.log12')
+        with self.assertRaises(ImportError):
+            getter()
