@@ -27,6 +27,7 @@ class ExpressionTest(unittest.TestCase):
     def test_simple_literals(self):
         self.assert_eval('5')
         self.assert_eval('"False"')
+        self.assert_eval('b"012"')
 
     def test_collection(self):
         self.assert_eval('[1, 2, 3]')
@@ -88,6 +89,9 @@ class ExpressionTest(unittest.TestCase):
     def test_unimplemented(self):
         with self.assertRaises(ValueError):
             parse_expression('lambda x: x')
+
+        with self.assertRaises(ValueError):
+            parse_expression('...')
 
     def test_reduce_constant_variables(self):
         e = parse_expression('foo.bar() + foo.baz() + foo.bang')

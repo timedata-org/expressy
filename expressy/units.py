@@ -16,7 +16,7 @@ PINT_MATCH_RE = re.compile(PINT_MATCH, re.VERBOSE)
 
 try:
     import pint
-except ImportError:
+except ImportError:  # pragma: no cover
     pint = None
 
 
@@ -60,7 +60,7 @@ def make_injector(enable=True, definitions=None, injected_name='pint'):
                 return process_units(s, wrap_name)
 
             return symbols_injected, preprocessor
-    else:
+    else:  # pragma: no cover
         def inject(symbols):
             def preprocessor(s):
                 return s
