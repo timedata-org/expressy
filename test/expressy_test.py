@@ -71,3 +71,21 @@ class ExpressyTest(unittest.TestCase):
             v = expressy.expressy('23Hz + 5Hz')()
             self.assertEqual(v.units, '1 / second')
             self.assertEqual(v.magnitude, 28)
+
+    def test_variable(self):
+        bar = ['NO']
+
+        def is_variable(name):
+            return name == 'foo'
+
+        def symbols(name):
+            if name == 'foo':
+                return lambda: bar[0]
+            raise ValueError()
+
+        e = expressy.make_expressy(is_variable, symbols)
+        expression = e('foo()')
+        self.assertFalse(expression.constant)
+        self.assertEqual(expression(symbols), 'NO')
+        bar[0] = 'YES'
+        self.assertEqual(expression(symbols), 'YES')

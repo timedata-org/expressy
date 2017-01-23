@@ -1,4 +1,4 @@
-import builtins, math, unittest
+import builtins, math, fractions, unittest
 from expressy.expression import parse_expression, reduce_constant
 from expressy.importer import importer
 from expressy import value
@@ -80,6 +80,9 @@ class ExpressionTest(unittest.TestCase):
         with self.assertRaises(KeyError):
             e(NO_SYMBOLS)
         self.assertEqual(e(vars(builtins).get), -1)
+        self.assert_eval('fractions.Fraction(1, denominator=2)', importer)
+        # See Issue #2.
+        # self.assert_eval("'{foo}={bar}, {}'.format('hi', foo=1, bar=2)")
 
     def test_attribute(self):
         e = parse_expression('foo.bar.baz')

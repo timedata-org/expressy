@@ -46,7 +46,7 @@ def Call(node):  # f(a, *b, **c)
         args, values = args_values[:arg_length], args_values[arg_length:]
         return caller(*args, **dict(zip(keys, values)))
 
-    return call, [node.func] + node.arg + value_nodes
+    return call, [node.func] + node.args + list(value_nodes)
 
 
 def IfExp(node):  # a if b else c
