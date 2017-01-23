@@ -43,10 +43,15 @@ class ExpressionTest(unittest.TestCase):
         self.assert_eval('1 + 2')
         self.assert_eval('1 / 2.3 * 9')
         self.assert_eval_raises(ZeroDivisionError, '1 / 0')
+        self.assert_eval('None is 2')
+        self.assert_eval('None is not None')
+        self.assert_eval('1 in [1, 2, 3]')
+        self.assert_eval('1 not in [1, 2, 3]')
 
     def test_bool(self):
         self.assert_eval('True and "12"')
         self.assert_eval('False or "12" and 0 or []')
+        self.assert_eval('False or "12"')
 
     def test_compare(self):
         self.assert_eval('1 < 2 < 3')
@@ -64,6 +69,11 @@ class ExpressionTest(unittest.TestCase):
     def test_subscript(self):
         self.assert_eval('"abcd"[1][0]')
         self.assert_eval_raises(IndexError, '"abcd"[10]')
+        self.assert_eval('"abcdefg"[2:3]')
+        self.assert_eval('"abcdefg"[2:7:3]')
+        self.assert_eval('"abcdefg"[2::3]')
+        self.assert_eval('"abcdefg"[2:1]')
+        self.assert_eval('"abcdefg"[2:1:-1]')
 
     def test_call(self):
         e = parse_expression('max(-1, -2)')
