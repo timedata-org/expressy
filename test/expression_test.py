@@ -81,8 +81,7 @@ class ExpressionTest(unittest.TestCase):
             e(NO_SYMBOLS)
         self.assertEqual(e(vars(builtins).get), -1)
         self.assert_eval('fractions.Fraction(1, denominator=2)', importer)
-        # See Issue #2.
-        # self.assert_eval("'{foo}={bar}, {}'.format('hi', foo=1, bar=2)")
+        self.assert_eval("'{foo}={bar}, {}'.format('hi', foo=1, bar=2)")
 
     def test_attribute(self):
         e = parse_expression('foo.bar.baz')
