@@ -71,6 +71,9 @@ class ExpressyTest(unittest.TestCase):
             v = expressy.expressy('23Hz + 5Hz')()
             self.assertEqual(v.units, '1 / second')
             self.assertEqual(v.magnitude, 28)
+        pintless = expressy.make_expressy(use_pint=False)
+        with self.assertRaises(SyntaxError):
+            pintless('23Hz + 5Hz')
 
     def test_variable(self):
         bar = ['NO']

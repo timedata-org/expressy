@@ -2,8 +2,7 @@ import builtins
 from . import expression, importer, units, value
 
 
-def make_expressy(is_variable=None, symbols=importer.importer,
-                  unit_injector=units.injector):
+def make_expressy(is_variable=None, symbols=importer.importer, use_pint=True):
     """Returns an expression maker - a function that converts a string
     to a callable whose value is that expression
 
@@ -17,7 +16,8 @@ def make_expressy(is_variable=None, symbols=importer.importer,
         unit_injector: injects unit definitions into the expression
             string and into the
     """
-    symbols, preprocessor = unit_injector(symbols)
+    injector = units.injector if use_pint else units.empty_injector
+    symbols, preprocessor = injector(symbols)
 
     def expression_maker(s):
         e = expression.parse_expression(preprocessor(s))

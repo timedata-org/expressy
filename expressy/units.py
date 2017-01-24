@@ -71,3 +71,4 @@ def make_injector(enable=True, definitions=None, injected_name='pint'):
 
 
 injector = make_injector()
+empty_injector = make_injector(False)
