@@ -1,19 +1,19 @@
 import builtins, math, unittest
-from expressy import expressy, units, value
+from expressy import expression_maker, units, value
 
 
 class ExpressyTest(unittest.TestCase):
     def assert_eval(self, s, symbols=None):
-        self.assertEqual(expressy.expressy(s)(), eval(s))
+        self.assertEqual(expression_maker.make_expression(s)(), eval(s))
 
     def assert_eval_raises(self, exception, s):
-        e = expressy.expressy(s)
+        e = expression_maker.make_expression(s)
         with self.assertRaises(exception):
             e()
 
     def test_empty(self):
         with self.assertRaises(ValueError):
-            expressy.expressy('')
+            expression_maker.make_expression('')
 
     def test_named_constant(self):
         self.assert_eval('True')
@@ -68,10 +68,10 @@ class ExpressyTest(unittest.TestCase):
 
     def test_units(self):
         if units.pint:
-            v = expressy.expressy('23Hz + 5Hz')()
+            v = expression_maker.make_expression('23Hz + 5Hz')()
             self.assertEqual(v.units, '1 / second')
             self.assertEqual(v.magnitude, 28)
-        pintless = expressy.make_expressy(use_pint=False)
+        pintless = expression_maker.make_expression_maker(use_pint=False)
         with self.assertRaises(SyntaxError):
             pintless('23Hz + 5Hz')
 
@@ -86,7 +86,7 @@ class ExpressyTest(unittest.TestCase):
                 return lambda: bar[0]
             raise ValueError()
 
-        e = expressy.make_expressy(is_variable, symbols)
+        e = expression_maker.make_expression_maker(is_variable, symbols)
         expression = e('foo()')
         self.assertFalse(expression.constant)
         self.assertEqual(expression(symbols), 'NO')
