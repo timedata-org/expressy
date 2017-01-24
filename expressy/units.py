@@ -60,6 +60,7 @@ def make_injector(enable=True, definitions=None, injected_name='pint'):
                 return process_units(s, wrap_name)
 
             return symbols_injected, preprocessor
+
     else:  # pragma: no cover
         def inject(symbols):
             def preprocessor(s):

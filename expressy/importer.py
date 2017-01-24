@@ -1,17 +1,36 @@
-# From BiblioPixel
-
 import builtins, importlib
 
 
 class Importer(object):
+    """An Importer imports either a namespace or a symbol within a namespace.
+
+    It's like a more general version of importlib.import_module which handles
+    builtins and attributes within a module.
+
+    An Importer has a symbol_table that's always used to try to resolve
+    symbols before anything else.  By default, symbol_table is the Python
+    default symbols (ArithmeticError, AssertionError, ..., abs, all, ... zip)
+
+    It also has a module_importer which imports Python namespaces or
+    raises an ImportError.  By default this is just importlib.import_module.
+    """
+
     def __init__(self, symbol_table=vars(builtins),
-                 importer=importlib.import_module,
-                 test_getter=True):
+                 module_importer=importlib.import_module):
+        """Args:
+            symbol_table: a dictionary which maps symbols to values.
+            module_importer: a function that imports namespaces by path or
+                raises an ImportError otherwise.
+            """
         self.symbol_table = symbol_table
-        self.importer = importer
-        self.test_getter = test_getter
+        self.module_importer = module_importer
 
     def getter(self, symbol):
+        """Return a function that gets the value for synbol when called.
+
+        This function will return the new value when that value changes,
+        but will *not* reload a module when that module changes.
+        """
         try:
             value = self.symbol_table[symbol]
             return lambda: value
@@ -20,7 +39,7 @@ class Importer(object):
 
         *body, last = symbol.split('.')
         try:
-            imported = self.importer(symbol)
+            imported = self.module_importer(symbol)
             return lambda: imported
         except ImportError:
             if not (body and last):
@@ -37,10 +56,10 @@ class Importer(object):
             except AttributeError:
                 raise ImportError("No module named '%s'" % symbol, name=symbol)
 
-        self.test_getter and getter()
         return getter
 
     def __call__(self, symbol):
+        """Import the value for symbol, or raise an ImportError."""
         return self.getter(symbol)()
 
 

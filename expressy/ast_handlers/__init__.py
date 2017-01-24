@@ -32,6 +32,7 @@ HANDLERS = dict(_handlers())
 
 
 def handle(node):
+    """Look up a handler based on the type of the AST node, then execute it."""
     try:
         return HANDLERS[type(node)](node)
     except:

@@ -36,13 +36,3 @@ class ImporterTest(unittest.TestCase):
         self.assertEqual(importer.importer('expressy.importer'), importer)
         self.assertEqual(importer.importer('expressy.importer.importer'),
                          importer.importer)
-
-    def test_getter(self):
-        self.assertIs(importer.importer.getter('math')(), math)
-        self.assertIs(importer.importer.getter('math.log')(), math.log)
-        with self.assertRaises(ImportError):
-            importer.importer.getter('math.log12')
-        untested_importer = importer.Importer(test_getter=False)
-        getter = untested_importer.getter('math.log12')
-        with self.assertRaises(ImportError):
-            getter()
