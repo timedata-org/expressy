@@ -9,10 +9,12 @@ class Importer(object):
 
     An Importer has a symbol_table that's always used to try to resolve
     symbols before anything else.  By default, symbol_table is the Python
-    default symbols (ArithmeticError, AssertionError, ..., abs, all, ... zip)
+    built-in symbols as found in the module `builtins`:
 
-    It also has a module_importer which imports Python namespaces or
-    raises an ImportError.  By default this is just importlib.import_module.
+        ArithmeticError, AssertionError, ..., abs, all, ... zip
+
+    It also has a module_importer which imports Python modules or raises
+    an ImportError.  By default this is just importlib.import_module.
     """
 
     def __init__(self, symbol_table=vars(builtins),
@@ -45,7 +47,7 @@ class Importer(object):
             if not (body and last):
                 raise  # Can't recurse any more!
 
-        # Call recursively.
+        # Call getter recursively on the parent.
         parent_name = '.'.join(body)
         parent = self.getter(parent_name)
         parent_value = parent()
@@ -59,7 +61,9 @@ class Importer(object):
         return getter
 
     def __call__(self, symbol):
-        """Import the value for symbol, or raise an ImportError."""
+        """Import the value for symbol, or raise an ImportError if it can't be
+        found.
+        """
         return self.getter(symbol)()
 
 

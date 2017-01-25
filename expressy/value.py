@@ -1,8 +1,9 @@
-"""A `Value` is a callable with a boolean property `constant`.
-"""
+"""A `Value` returns a result when called."""
 
 
 class Value(object):
+    """Value is always returns the same thing when called."""
+
     def __init__(self, value):
         self.value = value
 
@@ -11,5 +12,10 @@ class Value(object):
 
 
 class Symbol(Value):
+    """Symbol refers to a name in a symbol table."""
+
     def __call__(self):
+        """Returns itself when evaluated so the result can't accidentally be
+        used in futher calculations.
+        """
         return self
