@@ -1,7 +1,12 @@
 from . import quotes
 import keyword, functools, re
 
+"""
+This module is a hack to find Pint units in expressions and replace them
+with a call to parse that string as a Pint expression.
 
+See https://github.com/hgrecco/pint for more information about Pint.
+"""
 PINT_MATCH = r"""
     ( -? \d+ (?: \.\d* )? )          # A number with an optional decimal.
     ( \s* \w+ )                      # A unit.
@@ -18,12 +23,6 @@ try:
     import pint
 except ImportError:  # pragma: no cover
     pint = None
-
-
-def make_unit_registry(definitions):
-    ureg = pint.UnitRegistry()
-    map(ureg.define, definitions)
-    return ureg
 
 
 def process_units(s, processor):
@@ -45,7 +44,10 @@ def process_units(s, processor):
 def make_injector(enable=True, definitions=None, injected_name='pint'):
     if enable and pint:
         def inject(symbols):
-            unit_registry = make_unit_registry(definitions or [])
+            unit_registry = pint.UnitRegistry()
+
+            for d in (definitions or []):
+                unit_registry.define(d)
 
             def parse(s):
                 return unit_registry.parse_expression(s).to_base_units()
@@ -61,7 +63,7 @@ def make_injector(enable=True, definitions=None, injected_name='pint'):
 
             return symbols_injected, preprocessor
 
-    else:  # pragma: no cover
+    else:
         def inject(symbols):
             def preprocessor(s):
                 return s
