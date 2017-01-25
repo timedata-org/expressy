@@ -123,12 +123,12 @@ class ExpressionTest(unittest.TestCase):
                 return bang[0]
             raise KeyError()
 
-        def is_variable(name):
-            return name == 'foo.baz'
+        def is_constant(name):
+            return name != 'foo.baz'
 
         self.assertEqual(e(symbols), 'abc')
 
-        f = reduce_constant(e, symbols, is_variable)
+        f = reduce_constant(e, symbols, is_constant)
         self.assertFalse(f.constant)
         self.assertEqual(f(symbols), 'abc')
         bar[0], baz[0], bang[0] = 'xyz'

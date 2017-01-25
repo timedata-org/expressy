@@ -44,7 +44,7 @@ def parse_expression(s):
     return expression_from_node(module.body[0])
 
 
-def reduce_constant(expression, symbols, is_variable):
+def reduce_constant(expression, symbols, is_constant):
     """Recursively evaluate every part of an expression that isn't a
     variable symbol or dependent on one.
     """
@@ -53,7 +53,7 @@ def reduce_constant(expression, symbols, is_variable):
         result = expr(symbols)
 
         if isinstance(expr.executor, value.Symbol):
-            if is_variable(expr.executor.value):
+            if not is_constant(expr.executor.value):
                 return expr
 
         elif expr.dependents:

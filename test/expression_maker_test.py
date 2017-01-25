@@ -78,15 +78,15 @@ class ExpressyTest(unittest.TestCase):
     def test_variable(self):
         bar = ['NO']
 
-        def is_variable(name):
-            return name == 'foo'
+        def is_constant(name):
+            return name != 'foo'
 
         def symbols(name):
             if name == 'foo':
                 return lambda: bar[0]
             raise ValueError()
 
-        e = expression_maker.make_expression_maker(is_variable, symbols)
+        e = expression_maker.make_expression_maker(is_constant, symbols)
         expression = e('foo()')
         self.assertFalse(expression.constant)
         self.assertEqual(expression(symbols), 'NO')
