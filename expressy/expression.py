@@ -1,5 +1,5 @@
 import ast
-from . import ast_handlers, value
+from . import ast_handlers, importer, value
 
 
 class Expression(object):
@@ -60,3 +60,13 @@ class Bound(object):
 
     def __call__(self):
         return self.expression(self.symbol_table)
+
+
+class Maker(object):  # pragma: no cover
+    def __init__(self, is_constant=None, symbols=importer.importer):
+        self.is_constant = is_constant
+        self.symbols = symbols
+
+    def __call__(self, s):
+        expr = Expression.parse(s)
+        return expr.resolve(self.symbols, self.is_constant)

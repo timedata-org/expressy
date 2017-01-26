@@ -1,4 +1,4 @@
-from . import quotes
+from . import expression, quotes
 import keyword, functools, re
 
 """
@@ -75,3 +75,20 @@ def make_injector(enable=True, definitions=None, injected_name='pint'):
 
 injector = make_injector()
 empty_injector = make_injector(False)
+
+
+def inject(maker, definitions=None, injected_name='pint'):  # pragma: no cover
+    unit_registry = pint.UnitRegistry()
+    map(unit_registry.define, definitions or [])
+
+    def parse(s):
+        return unit_registry.parse_expression(s).to_base_units()
+
+    def wrap_name(s):
+        return "%s('%s')" % (injected_name, s)
+
+    def symbols(name):
+        return parse if name == injected_name else maker.symbols(name)
+
+    new_maker = expression.Maker(maker.is_constant, symbols)
+    return lambda s: new_maker(process_units(s, wrap_name))
