@@ -88,7 +88,7 @@ class ExpressyTest(unittest.TestCase):
 
         e = expression_maker.make_expression_maker(is_constant, symbols)
         expression = e('foo()')
-        self.assertFalse(expression.constant)
-        self.assertEqual(expression(symbols), 'NO')
+        self.assertFalse(isinstance(expression, value.Value))
+        self.assertEqual(expression(), 'NO')
         bar[0] = 'YES'
-        self.assertEqual(expression(symbols), 'YES')
+        self.assertEqual(expression(), 'YES')

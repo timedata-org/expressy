@@ -10,5 +10,6 @@ coverage report
 if ! coverage html ; then
     echo
     echo "ERROR: Failed coverage levels"
+    open htmlcov/index.html
     exit 1
 fi

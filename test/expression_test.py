@@ -95,8 +95,8 @@ class ExpressionTest(unittest.TestCase):
     def test_reduce_constant(self):
         e = Expression.parse('1')
         f = e.resolve(NO_SYMBOLS, lambda x: False)
-        self.assertTrue(f.constant)
-        self.assertEqual(f(NO_SYMBOLS), 1)
+        self.assertTrue(isinstance(f, value.Value))
+        self.assertEqual(f(), 1)
 
     def test_unimplemented(self):
         with self.assertRaises(ValueError):
@@ -129,7 +129,7 @@ class ExpressionTest(unittest.TestCase):
         self.assertEqual(e(symbols), 'abc')
 
         f = e.resolve(symbols, is_constant)
-        self.assertFalse(f.constant)
-        self.assertEqual(f(symbols), 'abc')
+        self.assertFalse(isinstance(f, value.Value))
+        self.assertEqual(f(), 'abc')
         bar[0], baz[0], bang[0] = 'xyz'
-        self.assertEqual(f(symbols), 'ayc')
+        self.assertEqual(f(), 'ayc')

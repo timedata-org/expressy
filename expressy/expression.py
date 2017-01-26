@@ -3,8 +3,6 @@ from . import ast_handlers, value
 
 
 class Expression(object):
-    constant = False
-
     def __init__(self, executor, *dependents):
         self.executor = executor
         self.dependents = dependents
@@ -33,31 +31,32 @@ class Expression(object):
 
         return Expression.from_node(module.body[0])
 
-    def resolve(self, symbols, is_constant):
+    def resolve(self, symbol_table, is_constant):
         """Recursively evaluate every part of an expression that isn't a
         variable symbol or dependent on one.
         """
+        def resolver(expr):
+            if isinstance(expr.executor, value.Symbol):
+                if not is_constant(expr.executor.value):
+                    return expr, False
 
-        result = self(symbols)
+            elif expr.dependents:
+                recursion = (resolver(d) for d in expr.dependents)
+                dependents, constants = zip(*recursion)
+                if not all(constants):
+                    return Expression(expr.executor, *dependents), False
 
-        if isinstance(self.executor, value.Symbol):
-            if not is_constant(self.executor.value):
-                return self
+            result = expr(symbol_table)
+            return Expression(value.Value(result)), True
 
-        elif self.dependents:
-            # Recursive call.
-            deps = [d.resolve(symbols, is_constant) for d in self.dependents]
-            if not all(d.constant for d in deps):
-                return Expression(self.executor, *deps)
-
-        return Constant(result)
+        expr, constant = resolver(self)
+        return expr.executor if constant else Bound(expr, symbol_table)
 
 
-class Constant(Expression):
-    constant = True
+class Bound(object):
+    def __init__(self, expression, symbol_table):
+        self.expression = expression
+        self.symbol_table = symbol_table
 
-    def __init__(self, value):
-        self.value = value
-
-    def __call__(self, symbols):
-        return self.value
+    def __call__(self):
+        return self.expression(self.symbol_table)
