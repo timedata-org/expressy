@@ -94,7 +94,7 @@ class ExpressionTest(unittest.TestCase):
 
     def test_reduce_constant(self):
         e = Expression.parse('1')
-        f = e.reduce_constant(NO_SYMBOLS, lambda x: False)
+        f = e.resolve(NO_SYMBOLS, lambda x: False)
         self.assertTrue(f.constant)
         self.assertEqual(f(NO_SYMBOLS), 1)
 
@@ -105,7 +105,7 @@ class ExpressionTest(unittest.TestCase):
         with self.assertRaises(ValueError):
             Expression.parse('...')
 
-    def test_reduce_constant_variables(self):
+    def test_resolve_variables(self):
         e = Expression.parse('foo.bar() + foo.baz() + foo.bang')
 
         # We're going to set up a fake environment with these three variables,
@@ -128,7 +128,7 @@ class ExpressionTest(unittest.TestCase):
 
         self.assertEqual(e(symbols), 'abc')
 
-        f = e.reduce_constant(symbols, is_constant)
+        f = e.resolve(symbols, is_constant)
         self.assertFalse(f.constant)
         self.assertEqual(f(symbols), 'abc')
         bar[0], baz[0], bang[0] = 'xyz'

@@ -33,7 +33,7 @@ class Expression(object):
 
         return Expression.from_node(module.body[0])
 
-    def reduce_constant(self, symbols, is_constant):
+    def resolve(self, symbols, is_constant):
         """Recursively evaluate every part of an expression that isn't a
         variable symbol or dependent on one.
         """
@@ -46,10 +46,9 @@ class Expression(object):
 
         elif self.dependents:
             # Recursive call.
-            dependents = [d.reduce_constant(symbols, is_constant)
-                          for d in self.dependents]
-            if not all(d.constant for d in dependents):
-                return Expression(self.executor, *dependents)
+            deps = [d.resolve(symbols, is_constant) for d in self.dependents]
+            if not all(d.constant for d in deps):
+                return Expression(self.executor, *deps)
 
         return Constant(result)
 
