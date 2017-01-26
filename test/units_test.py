@@ -1,5 +1,5 @@
 import unittest
-from expressy import units
+from expressy import expression, units
 
 MATCH = units.PINT_MATCH_RE
 
@@ -24,15 +24,9 @@ class UnitsTest(unittest.TestCase):
             "'1Hz' is evaluated as 1Hz.", self.processor)
         self.assertEqual(result, "'1Hz' is evaluated as pint('1Hz').", )
 
-    def test_empty_injector(self):
-        injector = units.make_injector(enable=False)
-        symbols, preprocessor = injector(None)
-        self.assertIs(symbols, None)
-        self.assertEqual(preprocessor('same'), 'same')
-
     def test_definitions(self):
-        injector = units.make_injector(
-            definitions=['beat = [] = beats', 'bar = [beats] = bars'])
-        _, preprocessor = injector(None)
-        s = preprocessor("'2 beats' is evaluated as 2 beats.")
-        self.assertEqual(s, "'2 beats' is evaluated as pint('2 beats').")
+        maker = expression.Maker()
+        injected = units.inject(
+            maker, definitions=['beat = [] = beats', 'bar = [beats] = bars'])
+        result = injected('2 beats')
+        self.assertEqual(result().magnitude, 2)

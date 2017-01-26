@@ -29,7 +29,7 @@ def process_units(s, processor):
     def replace(match):
         groups = [(g or '').strip() for g in match.groups()]
         has_keyword = any(keyword.iskeyword(g) for g in groups)
-        has_units = any(g.isalpha() for g in groups)
+        has_units = any(g.isalpha() for g in groups)  # pragma: no cover
         can_process = has_units and not has_keyword
 
         s = match.group(0)
@@ -41,45 +41,10 @@ def process_units(s, processor):
     return quotes.process_unquoted(s, sub)
 
 
-def make_injector(enable=True, definitions=None, injected_name='pint'):
-    if enable and pint:
-        def inject(symbols):
-            unit_registry = pint.UnitRegistry()
-
-            for d in (definitions or []):
-                unit_registry.define(d)
-
-            def parse(s):
-                return unit_registry.parse_expression(s).to_base_units()
-
-            def wrap_name(s):
-                return "%s('%s')" % (injected_name, s)
-
-            def symbols_injected(name):
-                return parse if name == injected_name else symbols(name)
-
-            def preprocessor(s):
-                return process_units(s, wrap_name)
-
-            return symbols_injected, preprocessor
-
-    else:
-        def inject(symbols):
-            def preprocessor(s):
-                return s
-
-            return symbols, preprocessor
-
-    return inject
-
-
-injector = make_injector()
-empty_injector = make_injector(False)
-
-
-def inject(maker, definitions=None, injected_name='pint'):  # pragma: no cover
+def inject(maker, definitions=None, injected_name='pint'):
     unit_registry = pint.UnitRegistry()
-    map(unit_registry.define, definitions or [])
+    for d in definitions or []:
+        unit_registry.define(d)
 
     def parse(s):
         return unit_registry.parse_expression(s).to_base_units()
@@ -91,4 +56,8 @@ def inject(maker, definitions=None, injected_name='pint'):  # pragma: no cover
         return parse if name == injected_name else maker.symbols(name)
 
     new_maker = expression.Maker(maker.is_constant, symbols)
-    return lambda s: new_maker(process_units(s, wrap_name))
+
+    def call(s):
+        return new_maker(process_units(s, wrap_name))
+
+    return call

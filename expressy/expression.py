@@ -37,11 +37,11 @@ class Expression(object):
         """
         def resolver(expr):
             if isinstance(expr.executor, value.Symbol):
-                if not is_constant(expr.executor.value):
+                if is_constant and not is_constant(expr.executor.value):
                     return expr, False
 
             elif expr.dependents:
-                recursion = (resolver(d) for d in expr.dependents)
+                recursion = [resolver(d) for d in expr.dependents]
                 dependents, constants = zip(*recursion)
                 if not all(constants):
                     return Expression(expr.executor, *dependents), False
@@ -62,7 +62,7 @@ class Bound(object):
         return self.expression(self.symbol_table)
 
 
-class Maker(object):  # pragma: no cover
+class Maker(object):
     def __init__(self, is_constant=None, symbols=importer.importer):
         self.is_constant = is_constant
         self.symbols = symbols

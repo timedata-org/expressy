@@ -10,6 +10,7 @@ class ImporterTest(unittest.TestCase):
 
     def test_single(self):
         self.assertIs(importer.importer('math'), math)
+        self.assertIs(importer.importer('min'), min)
         importer.importer('expressy')
 
     def test_failed_single(self):

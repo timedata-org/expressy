@@ -1,1 +1,4 @@
-from . expression_maker import make_expression, make_expression_maker
+from . import expression, units
+
+make_expression = expression.Maker()
+make_expression_units = units.inject(make_expression)

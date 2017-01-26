@@ -28,7 +28,7 @@ class Importer(object):
         self.module_importer = module_importer
 
     def getter(self, symbol):
-        """Return a function that gets the value for synbol when called.
+        """Return a function that gets the value for symbol when called.
 
         This function will return the new value when that value changes,
         but will *not* reload a module when that module changes.
