@@ -1,24 +1,22 @@
 import unittest
-from expressy import constant
-
-
-NONE = object()
-is_constant = constant.is_constant
+from expressy.constant import CONSTANT, CONSTANT_TRUE, prefix
 
 
 class ConstantTest(unittest.TestCase):
     def test_prefix(self):
-        pre = constant.prefix('time.')
-        self.assertEqual(pre('time.time'), True)
-        self.assertEqual(pre('foot.time'), None)
+        pre = prefix('time.')
+        self.assertTrue(pre('time.time'))
+        self.assertIs(pre('foot.time'), None)
 
     def test_empty(self):
-        self.assertEqual(is_constant('', NONE), NONE)
+        self.assertTrue(CONSTANT_TRUE(''))
+        self.assertIs(CONSTANT(''), None)
 
     def test_top_level(self):
-        self.assertEqual(is_constant('max'), True)
-        self.assertEqual(is_constant('len'), True)
+        self.assertTrue(CONSTANT_TRUE('max'))
+        self.assertTrue(CONSTANT('len'))
 
     def test_other(self):
-        self.assertEqual(is_constant('time.time'), False)
-        self.assertEqual(is_constant('foo.bar', NONE), NONE)
+        self.assertFalse(CONSTANT('time.time'))
+        self.assertIs(CONSTANT('foo.bar'), None)
+        self.assertTrue(CONSTANT('math.log'))

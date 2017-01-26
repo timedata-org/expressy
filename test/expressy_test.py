@@ -1,10 +1,15 @@
 import unittest
-from expressy import expression, make_expression, make_expression_units, value
+import expressy
+from expressy import expression, value
 
 
-class IntegrationTest(unittest.TestCase):
+class ExpressyTest(unittest.TestCase):
     def test_units(self):
-        v = make_expression_units('23Hz + 5Hz')()
+        self.assertEqual(expressy.parse('23 + 5')(), 28)
+
+        with self.assertRaises(SyntaxError):
+            expressy.parse('23Hz + 5Hz')
+        v = expressy.parse_with_units('23Hz + 5Hz')()
         self.assertEqual(v.units, '1 / second')
         self.assertEqual(v.magnitude, 28)
 

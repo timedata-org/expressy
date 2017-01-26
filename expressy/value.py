@@ -2,7 +2,7 @@
 
 
 class Value(object):
-    """Value is always returns the same thing when called."""
+    """Value returns a fixed value when called."""
 
     def __init__(self, value):
         self.value = value

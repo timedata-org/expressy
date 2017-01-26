@@ -1,5 +1,5 @@
 import ast
-from . import ast_handlers, importer, value
+from . import ast_handlers, constant, importer, value
 
 
 class Expression(object):
@@ -54,19 +54,39 @@ class Expression(object):
 
 
 class Bound(object):
+    """Binds an expression to a symbol_table."""
+
     def __init__(self, expression, symbol_table):
         self.expression = expression
         self.symbol_table = symbol_table
 
     def __call__(self):
+        """Returns the expression called on the symbol table."""
         return self.expression(self.symbol_table)
 
 
 class Maker(object):
-    def __init__(self, is_constant=None, symbols=importer.importer):
+    """Parses expressions into callables."""
+
+    def __init__(self, is_constant=constant.CONSTANT,
+                 symbols=importer.importer):
+        """
+        Args:
+            is_constant:  a function that returns True if a symbol is a
+                constant function, False if it is not, and None if unknown.
+
+            symbols: a function that returns the resolution of a symbol, or
+                raises an ImportError.
+        """
         self.is_constant = is_constant
         self.symbols = symbols
 
     def __call__(self, s):
+        """Parse a string representing an expression and return a callable
+        which when called returns the value of the expression.
+
+        If the expression is constant, returns a value.Value, otherwise
+        an expression.Bound.
+        """
         expr = Expression.parse(s)
         return expr.resolve(self.symbols, self.is_constant)
