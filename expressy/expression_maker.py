@@ -22,9 +22,9 @@ def make_expression_maker(
     symbols, preprocessor = injector(symbols)
 
     def make_expression(s):
-        e = expression.parse_expression(preprocessor(s))
+        e = expression.Expression.parse(preprocessor(s))
         if is_constant:
-            return expression.reduce_constant(e, symbols, is_constant)
+            return e.reduce_constant(symbols, is_constant)
 
         return lambda: e(symbols)
 

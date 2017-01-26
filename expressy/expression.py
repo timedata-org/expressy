@@ -16,8 +16,45 @@ class Expression(object):
             return symbols(v.value)
         return v
 
+    @staticmethod
+    def from_node(node):
+        executor, dependent_nodes = ast_handlers.handle(node)
+        assert callable(executor), str(type(executor))
 
-class Constant(object):
+        # Recursive call here!
+        dependents = (Expression.from_node(n) for n in dependent_nodes)
+        return Expression(executor, *dependents)
+
+    @staticmethod
+    def parse(s):
+        module = ast.parse(s)
+        if not module.body:
+            raise ValueError('Empty expression')
+
+        return Expression.from_node(module.body[0])
+
+    def reduce_constant(self, symbols, is_constant):
+        """Recursively evaluate every part of an expression that isn't a
+        variable symbol or dependent on one.
+        """
+
+        result = self(symbols)
+
+        if isinstance(self.executor, value.Symbol):
+            if not is_constant(self.executor.value):
+                return self
+
+        elif self.dependents:
+            # Recursive call.
+            dependents = [d.reduce_constant(symbols, is_constant)
+                          for d in self.dependents]
+            if not all(d.constant for d in dependents):
+                return Expression(self.executor, *dependents)
+
+        return Constant(result)
+
+
+class Constant(Expression):
     constant = True
 
     def __init__(self, value):
@@ -25,43 +62,3 @@ class Constant(object):
 
     def __call__(self, symbols):
         return self.value
-
-
-def expression_from_node(node):
-    executor, dependent_nodes = ast_handlers.handle(node)
-    assert callable(executor), str(type(executor))
-
-    # Recursive call here!
-    dependents = (expression_from_node(n) for n in dependent_nodes)
-    return Expression(executor, *dependents)
-
-
-def parse_expression(s):
-    module = ast.parse(s)
-    if not module.body:
-        raise ValueError('Empty expression')
-
-    return expression_from_node(module.body[0])
-
-
-def reduce_constant(expression, symbols, is_constant):
-    """Recursively evaluate every part of an expression that isn't a
-    variable symbol or dependent on one.
-    """
-
-    def make(expr):
-        result = expr(symbols)
-
-        if isinstance(expr.executor, value.Symbol):
-            if not is_constant(expr.executor.value):
-                return expr
-
-        elif expr.dependents:
-            # Recursive call.
-            dependents = [make(d) for d in expr.dependents]
-            if not all(d.constant for d in dependents):
-                return Expression(expr.executor, *dependents)
-
-        return Constant(result)
-
-    return make(expression)

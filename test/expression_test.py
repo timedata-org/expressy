@@ -1,5 +1,5 @@
 import builtins, math, fractions, unittest
-from expressy.expression import parse_expression, reduce_constant
+from expressy.expression import Expression
 from expressy.importer import importer
 from expressy import value
 
@@ -8,16 +8,16 @@ NO_SYMBOLS = {}.__getitem__
 
 class ExpressionTest(unittest.TestCase):
     def assert_eval(self, s, symbols=None):
-        self.assertEqual(parse_expression(s)(symbols), eval(s))
+        self.assertEqual(Expression.parse(s)(symbols), eval(s))
 
     def assert_eval_raises(self, exception, s):
-        e = parse_expression(s)
+        e = Expression.parse(s)
         with self.assertRaises(exception):
             e(NO_SYMBOLS)
 
     def test_empty(self):
         with self.assertRaises(ValueError):
-            parse_expression('')
+            Expression.parse('')
 
     def test_named_constant(self):
         self.assert_eval('True')
@@ -76,7 +76,7 @@ class ExpressionTest(unittest.TestCase):
         self.assert_eval('"abcdefg"[2:1:-1]')
 
     def test_call(self):
-        e = parse_expression('max(-1, -2)')
+        e = Expression.parse('max(-1, -2)')
         with self.assertRaises(KeyError):
             e(NO_SYMBOLS)
         self.assertEqual(e(vars(builtins).get), -1)
@@ -84,7 +84,7 @@ class ExpressionTest(unittest.TestCase):
         self.assert_eval("'{foo}={bar}, {}'.format('hi', foo=1, bar=2)")
 
     def test_attribute(self):
-        e = parse_expression('foo.bar.baz')
+        e = Expression.parse('foo.bar.baz')
         with self.assertRaises(KeyError):
             e(NO_SYMBOLS)
         self.assertEqual(e({'foo.bar.baz': 23}.get), 23)
@@ -93,20 +93,20 @@ class ExpressionTest(unittest.TestCase):
         self.assert_eval('math.log(1)', importer)
 
     def test_reduce_constant(self):
-        e = parse_expression('1')
-        f = reduce_constant(e, NO_SYMBOLS, lambda x: False)
+        e = Expression.parse('1')
+        f = e.reduce_constant(NO_SYMBOLS, lambda x: False)
         self.assertTrue(f.constant)
         self.assertEqual(f(NO_SYMBOLS), 1)
 
     def test_unimplemented(self):
         with self.assertRaises(ValueError):
-            parse_expression('lambda x: x')
+            Expression.parse('lambda x: x')
 
         with self.assertRaises(ValueError):
-            parse_expression('...')
+            Expression.parse('...')
 
     def test_reduce_constant_variables(self):
-        e = parse_expression('foo.bar() + foo.baz() + foo.bang')
+        e = Expression.parse('foo.bar() + foo.baz() + foo.bang')
 
         # We're going to set up a fake environment with these three variables,
         # mark foo.baz as variable, and then reduce constants... then
@@ -128,7 +128,7 @@ class ExpressionTest(unittest.TestCase):
 
         self.assertEqual(e(symbols), 'abc')
 
-        f = reduce_constant(e, symbols, is_constant)
+        f = e.reduce_constant(symbols, is_constant)
         self.assertFalse(f.constant)
         self.assertEqual(f(symbols), 'abc')
         bar[0], baz[0], bang[0] = 'xyz'
