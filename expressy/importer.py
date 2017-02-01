@@ -66,5 +66,16 @@ class Importer(object):
         """
         return self.getter(symbol)()
 
+    def make(self, typename, args=(), **kwds):
+        """Make an object from its type.
+
+        Args:
+            typename: name of the class or other constructor for the object.
+            args: positional arguments to the constructor.
+            keyword arguments to the constructor.
+        """
+        constructor = self(typename)
+        return constructor(*args, **kwds)
+
 
 importer = Importer()
